@@ -25,7 +25,10 @@
               class="fa fa-pencil fa-lg"
               aria-hidden="true"
             ></i></a>
-          <a><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
+          <a
+            href="/employee/delete/{{this._id}}"
+            onclick="return confirm('are you sure you wanna delete this?')"
+          ><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
         </td>
       </tr>
     {{/each}}

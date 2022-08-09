@@ -100,4 +100,17 @@ router.get("/:id", (req, res) => {
   }
 });
 
+router.get("/delete/:id", (req, res) => {
+  if (ObjectId.isValid(req.params.id)) {
+    db.collection("employees")
+      .deleteOne({ _id: ObjectId(req.params.id) })
+      .then(() => {
+        res.redirect("/employee/list");
+      })
+      .catch((err) => res.status(500).json({ err }));
+  } else {
+    res.status(500).json("Id is not valid");
+  }
+});
+
 module.exports = router;
