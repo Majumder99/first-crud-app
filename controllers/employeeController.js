@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Employee = mongoose.model("Employee");
+const { ObjectId } = require("mongodb");
 var router = express.Router();
 
 var app = express();
@@ -20,7 +21,11 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  insertRecord(req, res);
+  if (req.body._id === "") {
+    insertRecord(req, res);
+  } else {
+    updateRecord(req, res);
+  }
 });
 
 const insertRecord = (req, res) => {
@@ -34,7 +39,35 @@ const insertRecord = (req, res) => {
     .then(() => {
       res.redirect("employee/list");
     })
-    .catch((err) => res.status(500).json(err));
+    .catch((err) => {
+      res.render("employee/addOrEdit", {
+        viewTitle: "Insert Employee",
+        employee: req.body,
+      });
+    });
+};
+
+const updateRecord = (req, res) => {
+  const employee = req.body;
+  if (ObjectId.isValid(req.body._id)) {
+    db.collection("employees")
+      .updateOne(
+        { _id: ObjectId(req.body._id) },
+        {
+          $set: {
+            fullName: employee.fullName,
+            email: employee.email,
+            mobile: employee.mobile,
+            city: employee.city,
+          },
+        }
+      )
+      .then(() => {
+        res.redirect("employee/list");
+      });
+  } else {
+    res.status(500).json({ id: req.body._id });
+  }
 };
 
 router.get("/list", (req, res) => {
@@ -44,12 +77,27 @@ router.get("/list", (req, res) => {
     .find()
     .forEach((emp) => employee.push(emp))
     .then(() => {
-      // res.status(200).json({ list: employee });
       res.render("employee/list", {
         list: employee,
       });
     })
     .catch((err) => res.status(500).json({ err }));
+});
+
+router.get("/:id", (req, res) => {
+  if (ObjectId.isValid(req.params.id)) {
+    db.collection("employees")
+      .findOne({ _id: ObjectId(req.params.id) })
+      .then((doc) => {
+        res.render("employee/addOrEdit", {
+          viewTitle: "Update Employee",
+          employee: doc,
+        });
+      })
+      .catch((err) => res.status(500).json({ err }));
+  } else {
+    res.status(500).json("Id is not valid");
+  }
 });
 
 module.exports = router;
