@@ -38,7 +38,18 @@ const insertRecord = (req, res) => {
 };
 
 router.get("/list", (req, res) => {
-  res.json("from list");
+  let employee = [];
+
+  db.collection("employees")
+    .find()
+    .forEach((emp) => employee.push(emp))
+    .then(() => {
+      // res.status(200).json({ list: employee });
+      res.render("employee/list", {
+        list: employee,
+      });
+    })
+    .catch((err) => res.status(500).json({ err }));
 });
 
 module.exports = router;
